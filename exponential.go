@@ -63,7 +63,7 @@ type ExponentialBackOff struct {
 	Clock          Clock
 
 	currentInterval time.Duration
-	startTime       time.Time
+	startTime       *time.Time
 }
 
 // Clock is an interface that returns current time for BackOff.
@@ -163,7 +163,7 @@ var SystemClock = systemClock{}
 // Reset must be called before using b.
 func (b *ExponentialBackOff) Reset() {
 	b.currentInterval = b.InitialInterval
-	b.startTime = b.Clock.Now()
+	b.startTime = nil
 }
 
 // NextBackOff calculates the next backoff interval using the formula:
@@ -186,7 +186,15 @@ func (b *ExponentialBackOff) NextBackOff() time.Duration {
 // safe to call even while the backoff policy is used by a running
 // ticker.
 func (b *ExponentialBackOff) GetElapsedTime() time.Duration {
-	return b.Clock.Now().Sub(b.startTime)
+	if b.startTime == nil {
+		b.setStartTime(b.Clock.Now())
+	}
+	return b.Clock.Now().Sub(*b.startTime)
+}
+
+// setStartTime sets the start time
+func (b *ExponentialBackOff) setStartTime(time time.Time) {
+	b.startTime = &time
 }
 
 // Increments the current interval by multiplying it with the multiplier.

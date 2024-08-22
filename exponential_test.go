@@ -76,21 +76,23 @@ func TestGetElapsedTime(t *testing.T) {
 
 func TestMaxElapsedTime(t *testing.T) {
 	var exp = NewExponentialBackOff()
+	exp.setStartTime(time.Time{})
+
 	exp.Clock = &TestClock{start: time.Time{}.Add(10000 * time.Second)}
 	// Change the currentElapsedTime to be 0 ensuring that the elapsed time will be greater
 	// than the max elapsed time.
-	exp.startTime = time.Time{}
 	assertEquals(t, Stop, exp.NextBackOff())
 }
 
 func TestCustomStop(t *testing.T) {
 	var exp = NewExponentialBackOff()
+	exp.setStartTime(time.Time{})
+
 	customStop := time.Minute
 	exp.Stop = customStop
 	exp.Clock = &TestClock{start: time.Time{}.Add(10000 * time.Second)}
 	// Change the currentElapsedTime to be 0 ensuring that the elapsed time will be greater
 	// than the max elapsed time.
-	exp.startTime = time.Time{}
 	assertEquals(t, customStop, exp.NextBackOff())
 }
 
